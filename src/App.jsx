@@ -22,13 +22,13 @@ const reducer = (state, { type, payload }) => {
       ];
     }
     case 'CHANGE_COMPLETED': {
-      const idx = state.findIndex(({ id }) => id === payload);
-      const newTodo = { ...state[idx], isCompleted: !state[idx].isCompleted };
-
-      return [...state.slice(0, idx), newTodo, ...state.slice(idx + 1)];
+      return state.map((obj) => ({
+        ...obj,
+        isCompleted: obj.id === payload ? !obj.isCompleted : obj.isCompleted,
+      }));
     }
     default: {
-      throw Error('Unknown action: ' + type);
+      return state;
     }
   }
 };
