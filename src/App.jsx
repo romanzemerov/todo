@@ -1,5 +1,5 @@
 import { Paper, Divider, Button, List, Tabs, Tab } from '@mui/material';
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import { AddField } from './components/AddField';
 import { Item } from './components/Item';
 
@@ -24,6 +24,22 @@ const reducer = (state, { type, payload }) => {
     case 'REMOVE_TODO': {
       return state.filter((obj) => obj.id !== payload);
     }
+    case 'REVERT_ALL_TASKS': {
+      if (state.every((obj) => obj.isCompleted === true)) {
+        return state.map((obj) => ({
+          ...obj,
+          isCompleted: false,
+        }));
+      }
+
+      return state.map((obj) => ({
+        ...obj,
+        isCompleted: true,
+      }));
+    }
+    case 'CLEAR_TASKS': {
+      return [];
+    }
     case 'CHANGE_COMPLETED': {
       return state.map((obj) => ({
         ...obj,
@@ -38,6 +54,7 @@ const reducer = (state, { type, payload }) => {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, todos);
+  const [activeTab, setActiveTab] = useState(0);
 
   const addTodoHandler = (todo) => {
     dispatch({ type: 'ADD_TASK', payload: todo });
@@ -51,6 +68,24 @@ function App() {
     dispatch({ type: 'CHANGE_COMPLETED', payload: id });
   };
 
+  const clearAllButtonHandler = () => {
+    dispatch({ type: 'CLEAR_TASKS' });
+  };
+
+  const revertAllTasksButtonHandler = () => {
+    dispatch({ type: 'REVERT_ALL_TASKS' });
+  };
+
+  const getTodoTasks = (activeTab) => {
+    const activeTabToFilterFunction = {
+      0: () => true,
+      1: (obj) => obj.isCompleted === false,
+      2: (obj) => obj.isCompleted === true,
+    };
+
+    return state.filter(activeTabToFilterFunction[activeTab]);
+  };
+
   return (
     <div className="App">
       <Paper className="wrapper">
@@ -59,14 +94,14 @@ function App() {
         </Paper>
         <AddField onAdd={addTodoHandler} />
         <Divider />
-        <Tabs value={0}>
+        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)}>
           <Tab label="Все" />
           <Tab label="Активные" />
           <Tab label="Завершённые" />
         </Tabs>
         <Divider />
         <List>
-          {state.map(({ id, text, isCompleted }) => {
+          {getTodoTasks(activeTab).map(({ id, text, isCompleted }) => {
             return (
               <Item
                 key={id}
@@ -81,8 +116,12 @@ function App() {
         </List>
         <Divider />
         <div className="check-buttons">
-          <Button>Отметить всё</Button>
-          <Button>Очистить</Button>
+          <Button onClick={revertAllTasksButtonHandler}>
+            {state.every((obj) => obj.isCompleted === true)
+              ? 'Снять всё'
+              : 'Отметить всё'}
+          </Button>
+          <Button onClick={clearAllButtonHandler}>Очистить</Button>
         </div>
       </Paper>
     </div>
