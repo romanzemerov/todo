@@ -21,6 +21,9 @@ const reducer = (state, { type, payload }) => {
         },
       ];
     }
+    case 'REMOVE_TODO': {
+      return state.filter((obj) => obj.id !== payload);
+    }
     case 'CHANGE_COMPLETED': {
       return state.map((obj) => ({
         ...obj,
@@ -38,6 +41,10 @@ function App() {
 
   const addTodoHandler = (todo) => {
     dispatch({ type: 'ADD_TASK', payload: todo });
+  };
+
+  const removeTodoHandler = (id) => {
+    dispatch({ type: 'REMOVE_TODO', payload: id });
   };
 
   const changeCompletedHandler = (id) => {
@@ -67,6 +74,7 @@ function App() {
                 text={text}
                 isCompleted={isCompleted}
                 onChangeCompleted={changeCompletedHandler}
+                onRemove={removeTodoHandler}
               />
             );
           })}
